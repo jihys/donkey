@@ -17,8 +17,7 @@ import numpy as np
 import keras
 from keras.layers import Convolution2D, Cropping2D, MaxPooling2D, Activation, Dropout
 import donkeycar as dk
-###########AWS Summit###########
-from datetime import datetime
+
 hh,ww = 120,160
 
 
@@ -87,11 +86,10 @@ class KerasPilot():
 
 global_angle, global_throttle = 999,999
 
-
 ##########AWS Summit IoT#############################
 # For certificate based connection
 myMQTTClient = AWSIoTMQTTClient("YellowCar")
-print(myMQTTClient)
+#print(myMQTTClient)
 # For Websocket connection
 # myMQTTClient = AWSIoTMQTTClient("YelloCar", useWebsocket=True)
 # Configurations
@@ -110,7 +108,6 @@ myMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
 myMQTTClient.connect()
 #######################################################################
 
-
 class KerasCategorical(KerasPilot):
 
     #global_angle, global_throttle = 999,999
@@ -128,11 +125,10 @@ class KerasCategorical(KerasPilot):
 
         img_arr = img_arr.reshape((1,) + img_arr.shape)
         angle_binned, throttle = self.model.predict(img_arr)
-        #throttle[0][0] = 0.70
-        ## commented by kyoungsu 0410
-        #throttle[0][0] = throttle[0][0] * 1.4
-        #if (throttle[0][0] < 0.8):
-        #    throttle[0][0] = 0.8
+        #throttle[0][0] = 0.75
+        throttle[0][0] = throttle[0][0] * 1.4
+        if (throttle[0][0] < 0.6):
+            throttle[0][0] = 0.6
         
         print('throttle', throttle)
         #angle_certainty = max(angle_binned[0])
@@ -145,18 +141,16 @@ class KerasCategorical(KerasPilot):
         global_throttle = throttle[0][0]
         global_angle = angle_unbinned
         
-        
+        '''
 	# AWS Seoul Summit IoT############
         data ={}
-        data['angle']=angle_unbinned
-        data['throttle']=float(throttle[0][0])
-        data['timestamp']=str(datetime.now())[:-3]
+        data['anlgle']=angle_unbinned
+        data['throttle']=throttle[0][0]
         data_json=json.dumps(data)
-        print(data_json)
         myMQTTClient.publish('donkeycar/test',data_json,1)
          
         ###############################  
-        
+        '''
  
         return angle_unbinned, throttle[0][0]
     

@@ -150,9 +150,9 @@ class KerasCategorical(KerasPilot):
         data ={}
         data['angle']=angle_unbinned
         data['throttle']=float(throttle[0][0])
-        data['timestamp']=str(datetime.now())[:-3]
+        data['timestamp']=str(datetime.now())
         data_json=json.dumps(data)
-        print(data_json)
+        #print(data_json)
         myMQTTClient.publish('donkeycar/test',data_json,1)
          
         ###############################  

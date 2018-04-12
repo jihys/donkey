@@ -3,6 +3,7 @@ import time
 import numpy as np
 from PIL import Image
 import glob
+import cv2
 
 class BaseCamera:
 

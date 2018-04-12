@@ -20,8 +20,12 @@ import requests
 import tornado.ioloop
 import tornado.web
 import tornado.gen
-
+import cv2
 from ... import utils
+
+from donkeycar.parts.keras import KerasCategorical
+import donkeycar.parts.keras as car_metric
+import numpy as np
 
 
 class RemoteWebServer():
@@ -172,6 +176,7 @@ class VideoAPI(tornado.web.RequestHandler):
     @tornado.gen.coroutine
     def get(self):
 
+
         ioloop = tornado.ioloop.IOLoop.current()
         self.set_header("Content-type", "multipart/x-mixed-replace;boundary=--boundarydonotcross")
 
@@ -181,9 +186,22 @@ class VideoAPI(tornado.web.RequestHandler):
             
             interval = .1
             if self.served_image_timestamp + interval < time.time():
+                print('.')
+                # For AWS Seoul Summit
+                img_orig = self.application.img_arr.copy()
+                img_orig = cv2.resize(img_orig,None,fx=6.0, fy=6.0, interpolation = cv2.INTER_LINEAR)
 
+                overlay = img_orig.copy()
+                cv2.rectangle(overlay, (10,10), (880,140), (0,0,0), -1)
+                alpha = 0.3
+                cv2.addWeighted(overlay, alpha, img_orig,  1-alpha,0, img_orig)
+ 
+                cv2.putText(img_orig, 'Predicted Steering Angle : ' + str(np.round(car_metric.global_angle,2)), (20,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255),2,cv2.LINE_AA)
+                cv2.putText(img_orig, 'Predicted Throttle : ' + str(np.round(car_metric.global_throttle,2)), (20,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255),2,cv2.LINE_AA)
+                cv2.putText(img_orig, '(c) AWS Korea', (700,700), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255),2,cv2.LINE_AA)
+                img = utils.arr_to_binary(img_orig)
 
-                img = utils.arr_to_binary(self.application.img_arr)
+                #img = utils.arr_to_binary(self.application.img_arr)
 
                 self.write(my_boundary)
                 self.write("Content-type: image/jpeg\r\n")
